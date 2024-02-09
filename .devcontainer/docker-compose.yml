@@ -1,8 +1,7 @@
 version: "3.9"
 services:
-
   dev:
-    # build: 
+    # build:
     #   context: .
     # working_dir: /home/usr/code
     image: jupyter/minimal-notebook
@@ -11,4 +10,33 @@ services:
         source: ..
         target: /home/usr/code
         consistency: delegated
-    
+    networks:
+      - mynetwork
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:${ELASTIC_VERSION}
+    environment:
+      - "discovery.type=single-node"
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+      - ENROLLMENT_TOKEN=${ENROLLMENT_TOKEN}
+    ports:
+      - "9200:9200"
+    networks:
+      - mynetwork
+  kibana:
+    image: docker.elastic.co/kibana/kibana:${ELASTIC_VERSION}
+    environment:
+      - "discovery.type=single-node"
+      - KIBANA_PASSWORD=${KIBANA_PASSWORD}
+      - ENROLLMENT_TOKEN=${ENROLLMENT_TOKEN}
+
+    ports:
+      - "5601:5601"
+    depends_on:
+      - elasticsearch
+    networks:
+      - mynetwork
+
+networks:
+  mynetwork:
+    driver: bridge
